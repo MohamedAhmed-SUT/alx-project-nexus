@@ -54,3 +54,70 @@ It serves as a knowledge hub to showcase my understanding of backend engineering
 Use the **first week** to:  
 - Communicate which project you are developing.  
 - Identify ProDev Frontend learners working on the same project for seamless collaboration.  
+
+
+# 🚀 Project Nexus – SmartShop API
+
+## 📖 Project Idea
+Build an e-commerce platform using the Django REST Framework.
+The platform allows users to register and log in, browse products, add them to the shopping cart, and complete purchases.
+The goal is to build a professional API that can be easily integrated with any frontend (e.g., React or Angular).
+
+---
+
+## 🛠 Tech Stack
+- **Python 3.10+**
+- **Django / Django REST Framework**
+- **PostgreSQL** (as the main database)
+- **Docker** (for managing development and deployment environments)
+- **CI/CD using GitHub Actions** (for automated testing and deployment)
+
+---
+
+## 🎯 Features
+- 🔐 **User Authentication & Authorization** (JWT)
+- 📦 **CRUD for Products** (create/edit/view/delete)
+- 🛒 **Shopping Cart & Orders**
+- 🌐 **RESTful API Endpoints**
+- ⚡ **Caching** for improved performance (Redis)
+- ☁️ **Deployment** on Heroku or Render
+
+---
+
+## 📊 Database Design
+📎 ERD Diagram → [Put Lucidchart/Draw.io link here]
+
+---
+
+## 🌐 Deployment
+🔗 Hosted Project → [Put hosted version link here]
+
+---
+
+## 🎥 Demo
+📹 Demo Video → [Put video link here]
+
+---
+
+## 📑 Documentation
+- 📘 **API Documentation** → [Swagger / Postman Collection link]
+- ⚙️ **Setup Instructions** →
+
+```bash
+# Clone repo
+git clone https://github.com/username/smartshop-api.git
+cd smartshop-api
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate # (Linux/Mac)
+venv\Scripts\activate # (Windows)
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run migrations
+python manage.py migrate
+
+# Start development server
+python manage.py runserver
