@@ -99,6 +99,12 @@ The goal is to build a professional API that can be easily integrated with any f
 
 ---
 
+## 📦 Deliverables
+- ERD Google Doc 
+- Demo Video 
+- Hosted Project 
+
+
 ## 📑 Documentation
 - 📘 **API Documentation** → [Swagger / Postman Collection link]
 - ⚙️ **Setup Instructions** →
