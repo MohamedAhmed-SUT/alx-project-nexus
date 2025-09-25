@@ -1,0 +1,340 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0"><i class="fas fa-box me-2"></i>Products</h2>
+        <p class="text-muted mb-0">Manage your product inventory</p>
+    </div>
+    <a href="{% url 'product_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus-circle me-1"></i> Add New Product
+    </a>
+</div>
+
+<!-- Filters and Search -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">Clear</button>
+                </div>
+            </div>
+            <div class="col-md-3 mb-2">
+                <select class="form-select" id="categoryFilter">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name|lower }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 mb-2">
+                <select class="form-select" id="stockFilter">
+                    <option value="">All Stock Status</option>
+                    <option value="inStock">In Stock</option>
+                    <option value="lowStock">Low Stock</option>
+                    <option value="outOfStock">Out of Stock</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start-primary h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Products</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ products.paginator.count|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start-success h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-success text-uppercase mb-1">In Stock</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ in_stock|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start-warning h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-warning text-uppercase mb-1">Low Stock</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ low_stock|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start-danger h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-danger text-uppercase mb-1">Out of Stock</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ out_of_stock|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Product List</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="productsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Image</th>
+                        <th>Product</th>
+                        <th>Brand</th>
+                        <th>Weight (kg)</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Category</th>
+                        <th>Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr data-product-id="{{ product.id }}"
+                        data-product-name="{{ product.name }}"
+                        data-product-brand="{{ product.brand|default:'-' }}"
+                        data-product-weight="{{ product.weight|default:'-' }}"
+                        data-product-price="{{ product.price }}"
+                        data-product-stock="{{ product.stock }}"
+                        data-product-category="{{ product.category.name|default:'Uncategorized' }}"
+                        data-product-status="{% if product.is_active %}Active{% else %}Inactive{% endif %}"
+                        data-product-image="{% if product.image %}{{ product.image.url }}{% else %}''{% endif %}">
+                        <td><input type="checkbox" class="product-checkbox" data-id="{{ product.id }}"></td>
+                        <td>
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" width="60" height="60">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-box text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.brand|default:"-" }}</td>
+                        <td>{{ product.weight|default:"-" }}</td>
+                        <td>${{ product.price }}</td>
+                        <td>{{ product.stock }}</td>
+                        <td>{{ product.category.name|default:"Uncategorized" }}</td>
+                        <td>
+                            {% if product.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary view-details-btn" data-bs-toggle="tooltip" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="window.location.href='{% url 'product_update' product.id %}'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="window.location.href='{% url 'product_delete' product.id %}'">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4">
+                            <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No products found. <a href="{% url 'product_create' %}">Add your first product</a></p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Product Details Modal -->
+<div class="modal fade" id="productDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Product Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img id="modalProductImage" class="img-fluid rounded" style="display:none;">
+                        <div id="modalNoImage" class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 200px; display:none;">
+                            <i class="fas fa-box text-muted fa-3x"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <p><strong>ID:</strong> <span id="modalProductId"></span></p>
+                        <p><strong>Name:</strong> <span id="modalProductName"></span></p>
+                        <p><strong>Brand:</strong> <span id="modalProductBrand"></span></p>
+                        <p><strong>Weight:</strong> <span id="modalProductWeight"></span> kg</p>
+                        <p><strong>Price:</strong> $<span id="modalProductPrice"></span></p>
+                        <p><strong>Stock:</strong> <span id="modalProductStock"></span></p>
+                        <p><strong>Category:</strong> <span id="modalProductCategory"></span></p>
+                        <p><strong>Status:</strong> <span id="modalProductStatus" class="badge"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-primary" id="modalEditButton">Edit</button>
+                <button class="btn btn-sm btn-danger" id="modalDeleteButton">Delete</button>
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal backdrop allows clicks to pass through */
+.modal-backdrop.show {
+    background-color: rgba(0,0,0,0.1) !important;
+    pointer-events: none;
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const stockFilter = document.getElementById('stockFilter');
+    const table = document.getElementById('productsTable').getElementsByTagName('tbody')[0];
+    const rows = Array.from(table.getElementsByTagName('tr'));
+
+    function filterTable() {
+        const searchText = searchInput.value.toLowerCase();
+        const categoryText = categoryFilter.value.toLowerCase();
+        const stockText = stockFilter.value;
+
+        rows.forEach(row => {
+            const name = row.dataset.productName.toLowerCase();
+            const category = row.dataset.productCategory.toLowerCase();
+            const stock = parseInt(row.dataset.productStock);
+
+            let stockMatch = true;
+            if (stockText === 'inStock') stockMatch = stock > 5;
+            else if (stockText === 'lowStock') stockMatch = stock > 0 && stock <= 5;
+            else if (stockText === 'outOfStock') stockMatch = stock === 0;
+
+            const matchesSearch = name.includes(searchText);
+            const matchesCategory = categoryText === '' || category === categoryText;
+
+            if (matchesSearch && matchesCategory && stockMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    categoryFilter.addEventListener('change', filterTable);
+    stockFilter.addEventListener('change', filterTable);
+
+    clearSearch.addEventListener('click', () => {
+        searchInput.value = '';
+        categoryFilter.value = '';
+        stockFilter.value = '';
+        filterTable();
+    });
+
+    filterTable();
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const viewButtons = document.querySelectorAll('.view-details-btn');
+    const modalEl = document.getElementById('productDetailsModal');
+    const modalInstance = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+
+    viewButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const productId = row.dataset.productId;
+            const productName = row.dataset.productName;
+            const productBrand = row.dataset.productBrand;
+            const productWeight = row.dataset.productWeight;
+            const productPrice = row.dataset.productPrice;
+            const productStock = row.dataset.productStock;
+            const productCategory = row.dataset.productCategory;
+            const productStatus = row.dataset.productStatus;
+            const productImage = row.dataset.productImage;
+
+            document.getElementById('modalProductId').textContent = productId;
+            document.getElementById('modalProductName').textContent = productName;
+            document.getElementById('modalProductBrand').textContent = productBrand;
+            document.getElementById('modalProductWeight').textContent = productWeight;
+            document.getElementById('modalProductPrice').textContent = productPrice;
+            document.getElementById('modalProductStock').textContent = productStock;
+            document.getElementById('modalProductCategory').textContent = productCategory;
+            const statusBadge = document.getElementById('modalProductStatus');
+            statusBadge.textContent = productStatus;
+            statusBadge.className = 'badge ' + (productStatus === 'Active' ? 'bg-success' : 'bg-secondary');
+
+            const img = document.getElementById('modalProductImage');
+            const noImg = document.getElementById('modalNoImage');
+            if (productImage && productImage !== "''") {
+                img.src = productImage;
+                img.style.display = 'block';
+                noImg.style.display = 'none';
+            } else {
+                img.style.display = 'none';
+                noImg.style.display = 'flex';
+            }
+
+document.getElementById('modalEditButton').onclick = () => {
+    window.location.href = `/dashboard/products/${productId}/edit/`;
+};
+
+document.getElementById('modalDeleteButton').onclick = () => {
+    window.location.href = `/dashboard/products/${productId}/delete/`;
+};
+
+            modalInstance.show();
+        });
+    });
+});
+</script>
+{% endblock %}
