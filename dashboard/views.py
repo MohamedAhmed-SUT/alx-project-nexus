@@ -161,18 +161,40 @@ def password_change(request):
 def products_list(request):
     products = Product.objects.all().select_related("category")
     categories = Category.objects.all()
+
+    
+    search = request.GET.get("search", "")
+    category = request.GET.get("category", "")
+    stock = request.GET.get("stock", "")
+
+    if search:
+        products = products.filter(name__icontains=search)
+    if category:
+        products = products.filter(category__name=category)
+    if stock == "inStock":
+        products = products.filter(stock__gt=10)
+    elif stock == "lowStock":
+        products = products.filter(stock__gt=0, stock__lte=10)
+    elif stock == "outOfStock":
+        products = products.filter(stock=0)
+
+    
     in_stock = products.filter(stock__gt=10).count()
     low_stock = products.filter(stock__gt=0, stock__lte=10).count()
     out_of_stock = products.filter(stock=0).count()
+
+    
     paginator = Paginator(products, 5)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
+
     context = {
-        "products": page_obj,
+        "page_obj": page_obj,
         "categories": categories,
         "in_stock": in_stock,
         "low_stock": low_stock,
         "out_of_stock": out_of_stock,
+        "request": request,  
     }
     return render(request, "dashboard/products.html", context)
 
