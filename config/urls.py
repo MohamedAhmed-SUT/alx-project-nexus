@@ -21,20 +21,18 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    # Default redirect → dashboard
     path("", lambda request: redirect("dashboard_home", permanent=False)),
 
-    # Django Admin
     path("admin/", admin.site.urls),
-
-    # Dashboard
     path("dashboard/", include("dashboard.urls")),
 
-    # APIs
+    # Users
+    path("signup/", include("users.urls")),           
+    path("api/users/", include("users.api_urls")),    
+
     path("api/products/", include("products.urls")),
     path("api/orders/", include("orders.urls")),
     path("api/carts/", include("carts.urls")),
-    path("api/users/", include("users.urls")),
 
     # JWT Authentication
     path("api/auth/login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
