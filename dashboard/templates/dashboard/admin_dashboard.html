@@ -24,7 +24,6 @@ updateClock();
 setInterval(updateClock, 1000);
 </script>
 
-<!-- Filter Buttons -->
 <div class="card mb-4">
     <div class="card-body">
         <h5 class="card-title"><i class="fas fa-filter me-2"></i>Filter Data</h5>
@@ -37,7 +36,6 @@ setInterval(updateClock, 1000);
     </div>
 </div>
 
-<!-- Stats Cards -->
 <div class="row mb-4">
     <div class="col-xl-3 col-md-6 mb-4">
         <a href="{% url 'users_list' %}" class="text-decoration-none">
@@ -54,7 +52,6 @@ setInterval(updateClock, 1000);
             </div>
         </a>
     </div>
-
     <div class="col-xl-3 col-md-6 mb-4">
         <a href="{% url 'products_list' %}" class="text-decoration-none">
             <div class="card border-left-success h-100 py-2">
@@ -70,7 +67,6 @@ setInterval(updateClock, 1000);
             </div>
         </a>
     </div>
-
     <div class="col-xl-3 col-md-6 mb-4">
         <a href="{% url 'orders_list' %}" class="text-decoration-none">
             <div class="card border-left-warning h-100 py-2">
@@ -86,7 +82,6 @@ setInterval(updateClock, 1000);
             </div>
         </a>
     </div>
-
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-danger h-100 py-2">
             <div class="card-body">
@@ -102,7 +97,6 @@ setInterval(updateClock, 1000);
     </div>
 </div>
 
-<!-- Charts Section -->
 <div class="row mb-4">
     <div class="col-lg-8">
         <div class="card mb-4">
@@ -118,7 +112,6 @@ setInterval(updateClock, 1000);
     </div>
 </div>
 
-<!-- Recent Orders -->
 <div class="row">
     <div class="col-lg-6">
         <div class="card mb-4">
@@ -131,13 +124,12 @@ setInterval(updateClock, 1000);
                             <h6 class="mb-0">#{{ order.id }}</h6>
                             <small class="text-muted">{{ order.user.username }} - {{ order.created_at|date:"M d, Y" }}</small>
                         </div>
-                        {% if order.total_amount < 200 %}
-                            <span class="badge bg-primary">${{ order.total_amount }}</span>
-                        {% elif order.total_amount <= 1000 %}
-                            <span class="badge bg-success">${{ order.total_amount }}</span>
-                        {% else %}
-                            <span class="badge bg-danger">${{ order.total_amount }}</span>
-                        {% endif %}
+                        <span class="badge 
+                            {% if order.total_amount < 200 %}bg-primary
+                            {% elif order.total_amount <= 1000 %}bg-success
+                            {% else %}bg-danger{% endif %}">
+                            ${{ order.total_amount }}
+                        </span>
                     </div>
                     {% endfor %}
                 </div>
@@ -145,7 +137,6 @@ setInterval(updateClock, 1000);
         </div>
     </div>
 
-    <!-- Quick Actions -->
     <div class="col-lg-6">
         <div class="card mb-4">
             <div class="card-header"><h5 class="card-title"><i class="fas fa-tasks me-2"></i>Quick Actions</h5></div>
@@ -170,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
             datasets:[{
                 label:'Sales ($)',
-                data:[12000,19000,15000,25000,22000,30000,28000,26000,31000,35000,40000,42000],
+                data: {{ sales_by_month_json|safe }},
                 backgroundColor:'rgba(78,115,223,0.05)',
                 borderColor:'rgba(78,115,223,1)',
                 pointRadius:3, pointBackgroundColor:'rgba(78,115,223,1)',
@@ -188,9 +179,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const revenueChart = new Chart(document.getElementById('revenueChart'), {
         type:'doughnut',
         data:{
-            labels:['Electronics','Clothing','Books','Home & Kitchen'],
+            labels: {{ revenue_labels_json|safe }},
             datasets:[{
-                data:[45,25,15,15],
+                data: {{ revenue_data_json|safe }},
                 backgroundColor:['#4e73df','#1cc88a','#36b9cc','#f6c23e'],
                 hoverBackgroundColor:['#2e59d9','#17a673','#2c9faf','#dda20a'],
                 hoverBorderColor:'rgba(234,236,244,1)'

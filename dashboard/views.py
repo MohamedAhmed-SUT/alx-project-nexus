@@ -6,9 +6,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.utils.timezone import now, timedelta
 from django.core.paginator import Paginator
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.http import HttpResponse
 import csv
 import json
 
@@ -32,7 +30,24 @@ def admin_dashboard(request):
     orders = Order.objects.all().order_by("-created_at")
     if start_date:
         orders = orders.filter(created_at__date__gte=start_date)
-    total_sales = sum(sum(item.price * item.quantity for item in order.items.all()) for order in orders)
+    for order in orders:
+        order.total_amount = sum(item.price * item.quantity for item in order.items.all())
+    total_sales = sum(order.total_amount for order in orders)
+    sales_by_month = []
+    for month in range(1, 13):
+        monthly_orders = orders.filter(created_at__month=month)
+        month_total = sum(sum(item.price * item.quantity for item in order.items.all()) for order in monthly_orders)
+        sales_by_month.append(month_total)
+    categories = Category.objects.all()
+    revenue_data = []
+    for category in categories:
+        category_total = sum(
+            item.price * item.quantity
+            for order in orders
+            for item in order.items.all()
+            if item.product.category == category
+        )
+        revenue_data.append(category_total)
     context = {
         "users_count": User.objects.count(),
         "products_count": Product.objects.count(),
@@ -40,6 +55,9 @@ def admin_dashboard(request):
         "total_sales": total_sales,
         "period": period,
         "recent_orders": orders[:5],
+        "sales_by_month_json": json.dumps(sales_by_month),
+        "revenue_labels_json": json.dumps([c.name for c in categories]),
+        "revenue_data_json": json.dumps(revenue_data),
     }
     return render(request, "dashboard/admin_dashboard.html", context)
 
