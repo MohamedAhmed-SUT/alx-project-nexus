@@ -37,7 +37,7 @@ def admin_dashboard(request):
     for month in range(1, 13):
         monthly_orders = orders.filter(created_at__month=month)
         month_total = sum(sum(item.price * item.quantity for item in order.items.all()) for order in monthly_orders)
-        sales_by_month.append(month_total)
+        sales_by_month.append(float(month_total))
     categories = Category.objects.all()
     revenue_data = []
     for category in categories:
@@ -47,12 +47,12 @@ def admin_dashboard(request):
             for item in order.items.all()
             if item.product.category == category
         )
-        revenue_data.append(category_total)
+        revenue_data.append(float(category_total))
     context = {
         "users_count": User.objects.count(),
         "products_count": Product.objects.count(),
         "orders_count": orders.count(),
-        "total_sales": total_sales,
+        "total_sales": float(total_sales),
         "period": period,
         "recent_orders": orders[:5],
         "sales_by_month_json": json.dumps(sales_by_month),
