@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from carts.models import CartItem, Cart
 
-# ================= CartItem Serializer =================
+
 class CartItemSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(
         source="product.price",
@@ -19,7 +19,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         return obj.total_price()
 
 
-# ================= Cart Serializer =================
+
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     total_price = serializers.DecimalField(
