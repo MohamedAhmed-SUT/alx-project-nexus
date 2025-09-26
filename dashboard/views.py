@@ -327,32 +327,61 @@ def remove_from_cart(request, item_id):
 def shop_view(request):
     products = Product.objects.filter(stock__gt=0)
     categories = Category.objects.all()
+    search = request.GET.get("search", "")
     selected_category = request.GET.get("category", "all")
+    max_price = request.GET.get("max_price", "")
+    sort = request.GET.get("sort", "name")
+    if search:
+        products = products.filter(name__icontains=search)
     if selected_category != "all":
         products = products.filter(category__name=selected_category)
-    max_price = request.GET.get("max_price")
     if max_price:
         try:
             max_price = float(max_price)
             products = products.filter(price__lte=max_price)
         except ValueError:
-            max_price = None
-    sort = request.GET.get("sort", "name")
+            max_price = 10000  # Default max if invalid
     if sort == "price-low":
         products = products.order_by("price")
     elif sort == "price-high":
         products = products.order_by("-price")
     elif sort == "newest":
         products = products.order_by("-created_at")
+    elif sort == "popular":
+        products = products.order_by("-views")  # Assuming a views field; adjust as needed
     else:
         products = products.order_by("name")
+    paginator = Paginator(products, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     cart, _ = Cart.objects.get_or_create(user=request.user)
     cart_items_count = cart.items.count()
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
+        quantity = int(request.POST.get("quantity", 1))
+        if product_id:
+            product = get_object_or_404(Product, id=product_id, stock__gt=0)
+            if quantity <= product.stock:
+                cart_item, created = CartItem.objects.get_or_create(
+                    cart=cart, product=product, defaults={'quantity': quantity}
+                )
+                if not created:
+                    cart_item.quantity += quantity
+                    cart_item.save()
+                messages.success(request, f"🛒 Added {quantity} × {product.name} to your cart!")
+            else:
+                messages.error(request, f"❌ Insufficient stock for {product.name}")
+        query_params = request.GET.urlencode()
+        redirect_url = f"?{query_params}" if query_params else ""
+        return redirect(f"{request.path}{redirect_url}")
+
     context = {
-        "products": products,
+        "page_obj": page_obj,
         "categories": categories,
         "selected_category": selected_category,
-        "max_price": max_price or 10000,
+        "max_price": max_price,
+        "sort": sort,
+        "search": search,
         "cart_items_count": cart_items_count,
     }
     return render(request, "dashboard/shop.html", context)

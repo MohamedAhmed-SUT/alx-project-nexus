@@ -329,6 +329,42 @@
         transform: translateY(-50%);
         color: #6c757d;
     }
+
+    .pagination {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 20px;
+        justify-content: center;
+    }
+
+    .pagination a, 
+    .pagination span {
+        padding: 8px 14px;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        text-decoration: none;
+        color: #4361ee;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .pagination a:hover {
+        background: #4361ee;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .pagination span.active {
+        background: linear-gradient(to right, #4361ee, #7209b7);
+        color: white;
+        border: none;
+        cursor: default;
+    }
+
+    .filter-form {
+        display: none; /* Hidden for JS handling, but can be used for server-side */
+    }
     
     @media (max-width: 768px) {
         .shop-header {
@@ -351,70 +387,66 @@
 </style>
 
 <div class="shop-container">
-    <!-- Header -->
     <div class="shop-header">
         <h1 class="page-title">🛍️ Shop</h1>
         <div class="d-flex gap-3 align-items-center">
-            <!-- Search Box -->
             <div class="search-box">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" class="form-control" placeholder="Search products..." id="searchInput">
+                <input type="text" class="form-control" placeholder="Search products..." id="searchInput" value="{{ search }}">
             </div>
             
-<a href="{% url 'cart_page' %}" class="btn-cart">
-
-    <i class="fas fa-shopping-cart"></i>
-    Cart
-    <span class="cart-badge" id="cartCount">{{ cart_items_count }}</span>
-</a>
-
+            <a href="{% url 'cart_page' %}" class="btn-cart">
+                <i class="fas fa-shopping-cart"></i>
+                Cart
+                <span class="cart-badge" id="cartCount">{{ cart_items_count }}</span>
+            </a>
         </div>
     </div>
     
-    <!-- Filters -->
     <div class="filters-card">
         <h3><i class="fas fa-filter text-primary"></i> Filter Products</h3>
-<div class="category-filters">
-    <button class="category-filter {% if selected_category == 'all' %}active{% endif %}" 
-            data-category="all">All Products</button>
+        <form method="get" class="filter-form">
+            <!-- Hidden inputs to preserve other params if needed -->
+            <input type="hidden" name="page" value="1">
+        </form>
+        <div class="category-filters">
+            <a href="?category=all&{% if search %}{{ request.GET.urlencode|cut:'?category=' }}{% endif %}" 
+               class="category-filter {% if selected_category == 'all' %}active{% endif %}">All Products</a>
 
-    {% for category in categories %}
-        <button class="category-filter {% if selected_category == category.name %}active{% endif %}" 
-                data-category="{{ category.name }}">
-            {{ category.name }}
-        </button>
-    {% endfor %}
-</div>
-
+            {% for category in categories %}
+                <a href="?category={{ category.name }}&{% if search %}{{ request.GET.urlencode|cut:'?category=' }}{% endif %}" 
+                   class="category-filter {% if selected_category == category.name %}active{% endif %}">
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+        </div>
         
         <div class="row g-3 mt-2">
             <div class="col-md-6">
                 <label class="form-label"><i class="fas fa-dollar-sign"></i> Price Range</label>
-                <input type="range" class="form-range" min="0" max="1000" step="10" id="priceRange">
+                <input type="range" class="form-range" min="0" max="1000" step="10" id="priceRange" value="{{ max_price|default:1000 }}">
                 <div class="d-flex justify-content-between">
                     <span>$0</span>
-                    <span id="maxPrice">$1000</span>
+                    <span id="maxPrice">${{ max_price|default:1000 }}</span>
                 </div>
             </div>
             
             <div class="col-md-6">
                 <label class="form-label"><i class="fas fa-sort"></i> Sort By</label>
-                <select class="form-select" id="sortBy">
-                    <option value="name">Name (A-Z)</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="newest">Newest First</option>
-                    <option value="popular">Most Popular</option>
+                <select class="form-select" id="sortBy" onchange="applyFilters()">
+                    <option value="name" {% if sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                    <option value="price-low" {% if sort == 'price-low' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price-high" {% if sort == 'price-high' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+                    <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most Popular</option>
                 </select>
             </div>
         </div>
     </div>
     
-    <!-- Products Grid -->
     <div class="products-grid" id="productsGrid">
-        {% for product in products %}
-        <div class="product-card" data-category="{{ product.category|default:'general' }}" data-name="{{ product.name|lower }}" data-price="{{ product.price }}">
-            <!-- Product Badges -->
+        {% for product in page_obj %}
+        <div class="product-card" data-category="{{ product.category.name|default:'general' }}" data-name="{{ product.name|lower }}" data-price="{{ product.price }}">
             {% if product.stock < 10 and product.stock > 0 %}
                 <div class="product-badge badge-low-stock">Low Stock</div>
             {% elif product.is_new %}
@@ -472,66 +504,78 @@
         </div>
         {% endfor %}
     </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="pagination mt-4 d-flex justify-content-center">
+        {% if page_obj.has_previous %}
+            <a href="?{% if search %}search={{ search }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page=1">&laquo; First</a>
+            <a href="?{% if search %}search={{ search }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="active">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?{% if search %}search={{ search }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <a href="?{% if search %}search={{ search }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+            <a href="?{% if search %}search={{ search }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if max_price %}max_price={{ max_price }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const categoryFilters = document.querySelectorAll('.category-filter');
     const searchInput = document.getElementById('searchInput');
     const priceRange = document.getElementById('priceRange');
     const sortBy = document.getElementById('sortBy');
-    const productsGrid = document.getElementById('productsGrid');
-    const products = document.querySelectorAll('.product-card');
     
-    // Category filtering
-    categoryFilters.forEach(filter => {
-        filter.addEventListener('click', function() {
-            categoryFilters.forEach(f => f.classList.remove('active'));
-            this.classList.add('active');
-            filterProducts();
+    // Client-side add to cart animation (server-side submission)
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const button = this.querySelector('.btn-add-to-cart');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+            button.disabled = true;
+            
+            // Submit normally; animation is just visual
+            setTimeout(() => {
+                button.innerHTML = '<i class="fas fa-check"></i> Added!';
+                button.style.background = 'linear-gradient(to right, #28a745, #20c997)';
+                
+                const cartCount = document.getElementById('cartCount');
+                cartCount.textContent = parseInt(cartCount.textContent) + 1;
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = '';
+                }, 1500);
+            }, 800);
         });
     });
     
-    // Search functionality
-    searchInput.addEventListener('input', filterProducts);
-    
-    // Price range filtering
-    priceRange.addEventListener('input', function() {
-        document.getElementById('maxPrice').textContent = '$' + this.value;
-        filterProducts();
-    });
-    
-    // Sort functionality
-    sortBy.addEventListener('change', sortProducts);
-    
-    function filterProducts() {
-        const activeCategory = document.querySelector('.category-filter.active').dataset.category;
+    // Client-side filters for current page only (for instant feedback; full reload on change)
+    function applyFilters() {
         const searchTerm = searchInput.value.toLowerCase();
         const maxPrice = parseFloat(priceRange.value);
+        const sortValue = sortBy.value;
+        const products = document.querySelectorAll('.product-card');
         
-        products.forEach(product => {
-            const category = product.dataset.category;
+        let filtered = Array.from(products).filter(product => {
             const name = product.dataset.name;
             const price = parseFloat(product.dataset.price);
-            
-            const categoryMatch = activeCategory === 'all' || category === activeCategory;
             const searchMatch = name.includes(searchTerm);
             const priceMatch = price <= maxPrice;
-            
-            if (categoryMatch && searchMatch && priceMatch) {
-                product.style.display = 'block';
-                product.style.animation = 'fadeInUp 0.5s ease-out';
-            } else {
-                product.style.display = 'none';
-            }
+            return searchMatch && priceMatch;
         });
-    }
-    
-    function sortProducts() {
-        const sortValue = sortBy.value;
-        const productArray = Array.from(products);
         
-        productArray.sort((a, b) => {
+        // Sort filtered
+        filtered.sort((a, b) => {
             switch(sortValue) {
                 case 'name':
                     return a.dataset.name.localeCompare(b.dataset.name);
@@ -539,69 +583,42 @@ document.addEventListener('DOMContentLoaded', function() {
                     return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
                 case 'price-high':
                     return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-                case 'newest':
-                case 'popular':
                 default:
-                    return Math.random() - 0.5; // Random for demo
+                    return 0;
             }
         });
         
-        productArray.forEach((product, index) => {
-            product.style.animationDelay = (index * 0.1) + 's';
-            productsGrid.appendChild(product);
+        // Re-append to grid
+        const grid = document.getElementById('productsGrid');
+        products.forEach(p => grid.appendChild(p)); // Reset
+        filtered.forEach((product, index) => {
+            product.style.display = 'block';
+            grid.appendChild(product);
         });
+        products.forEach(p => { if (!filtered.includes(p)) p.style.display = 'none'; });
     }
     
-    // Add to cart with animation
-    document.querySelectorAll('.add-to-cart-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const button = this.querySelector('.btn-add-to-cart');
-            const originalText = button.innerHTML;
-            
-            // Loading animation
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-            button.disabled = true;
-            
-            // Simulate API call
-            setTimeout(() => {
-                // Success animation
-                button.innerHTML = '<i class="fas fa-check"></i> Added!';
-                button.style.background = 'linear-gradient(to right, #28a745, #20c997)';
-                
-                // Update cart count
-                const cartCount = document.getElementById('cartCount');
-                cartCount.textContent = parseInt(cartCount.textContent) + 1;
-                
-                // Reset button after delay
-                setTimeout(() => {
-                    button.innerHTML = originalText;
-                    button.style.background = '';
-                    button.disabled = false;
-                }, 1500);
-                
-                // Actually submit the form
-                this.submit();
-            }, 800);
-        });
+    searchInput.addEventListener('input', debounce(applyFilters, 300));
+    priceRange.addEventListener('input', function() {
+        document.getElementById('maxPrice').textContent = '$' + this.value;
+        applyFilters();
     });
     
-    // Add fadeInUp animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    `;
-    document.head.appendChild(style);
+    // For server-side full refresh on category/sort (links already handle)
+    // Debounce for search
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // Note: For full server-side search/filter, add submit button or on change redirect
 });
 </script>
 {% endblock %}
