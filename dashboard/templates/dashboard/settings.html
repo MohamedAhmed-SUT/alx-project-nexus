@@ -101,10 +101,11 @@
         <div class="modal fade" id="passwordChangeModal" tabindex="-1" aria-labelledby="passwordChangeModalLabel" aria-hidden="true" data-bs-backdrop="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4">
-                    <div class="modal-header bg-gradient-primary text-white rounded-top-4">
+                    <div class="modal-header bg-gradient-primary text-white rounded-top-4 change-bg">
                         <h5 class="modal-title" id="passwordChangeModalLabel">
-                            <i class="fas fa-key me-2"></i>Change Password
-                        </h5>
+                            <i class="fas fa-key me-2"></i>
+                            <span class="change-bg px-2 py-1 rounded">Change Password</span>
+                        </h5>                        
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body p-4">
@@ -302,6 +303,12 @@
             padding: 1.5rem;
         }
     }
+    .change-bg {
+    background-color: #2563eb; 
+    color: #fff; 
+    border-radius: 8px; 
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
