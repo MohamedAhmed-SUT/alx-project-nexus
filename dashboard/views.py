@@ -223,7 +223,21 @@ def product_update(request, pk):
             return redirect("products_list")
     else:
         form = ProductForm(instance=product)
-    return render(request, "dashboard/product_form.html", {"form": form})
+    
+    
+    products_count = Product.objects.count()
+    active_products_count = Product.objects.filter(is_active=True).count()
+    low_stock_count = Product.objects.filter(stock__lte=10).count()  
+    recent_products = Product.objects.order_by('-created_at')[:5]  
+
+    context = {
+        "form": form,
+        "products_count": products_count,
+        "active_products_count": active_products_count,
+        "low_stock_count": low_stock_count,
+        "recent_products": recent_products,
+    }
+    return render(request, "dashboard/product_form.html", context)
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
