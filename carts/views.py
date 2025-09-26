@@ -9,9 +9,9 @@ import json
 from .models import Cart, CartItem
 from .serializers import CartSerializer, CartItemSerializer
 from products.models import Product
-from orders.models import Order, OrderItem  # تأكد أن لديك هذا الموديل
+from orders.models import Order, OrderItem  
 
-# ==================== Cart Views ====================
+
 
 class CartDetailView(generics.RetrieveAPIView):
     serializer_class = CartSerializer
@@ -95,7 +95,7 @@ def CheckoutView(request):
                 item.product.stock -= item.quantity
                 item.product.save()
 
-            cart.items.all().delete()  # حذف كل عناصر السلة بعد إنشاء الطلب
+            cart.items.all().delete()  
 
         return JsonResponse({"success": True, "message": "Checkout completed successfully!"})
     except Exception as e:
