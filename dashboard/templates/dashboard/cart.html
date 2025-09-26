@@ -28,7 +28,6 @@ body {
     color:#334155;
     padding-top:6rem;
 }
-/* Navbar */
 .navbar {
     background: rgba(30,41,59,0.95) !important;
     backdrop-filter: blur(10px);
@@ -51,7 +50,6 @@ body {
     transition: var(--transition); transform:translateX(-50%);
 }
 .nav-link:hover::after {width:80%;}
-/* Main container */
 .main-container {
     background: rgba(255,255,255,0.95);
     backdrop-filter: blur(10px);
@@ -61,10 +59,8 @@ body {
     padding: 2rem;
     max-width: 1400px;
 }
-/* Card */
 .card {border:none; border-radius: var(--border-radius); box-shadow: var(--box-shadow); transition: var(--transition); overflow:hidden;}
 .card:hover {transform: translateY(-5px); box-shadow:0 10px 25px -5px rgba(0,0,0,0.2);}
-/* Buttons */
 .btn {border-radius:8px; font-weight:500; transition: var(--transition); border:none; position:relative; overflow:hidden;}
 .btn::before {content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:left 0.5s;}
 .btn:hover::before {left:100%;}
@@ -72,13 +68,11 @@ body {
 .btn-success {background:linear-gradient(45deg,#10b981,#059669);}
 .btn-warning {background:linear-gradient(45deg,#f59e0b,#d97706);}
 .btn-danger {background:linear-gradient(45deg,#ef4444,#dc2626);}
-/* Table */
 .table {background:white; border-radius: var(--border-radius); overflow:hidden; box-shadow: var(--box-shadow);}
 .table th {background: linear-gradient(45deg,#1e293b,#334155); color:white; font-weight:600; border:none; padding:1rem;}
 .table td {padding:1rem; vertical-align:middle; border-color:#e2e8f0;}
 .table tbody tr {transition: var(--transition);}
 .table tbody tr:hover {background-color:#f8fafc; transform:scale(1.01);}
-/* Form controls */
 .form-control, .form-select {border-radius:8px; border:2px solid #e2e8f0; transition:var(--transition); padding:0.75rem 1rem;}
 .form-control:focus, .form-select:focus {border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); transform:translateY(-1px);}
 .fade-in {animation:fadeIn 0.6s ease-out;}
@@ -86,7 +80,6 @@ body {
 .slide-in {animation:slideIn 0.5s ease-out;}
 @keyframes slideIn {from {opacity:0; transform:translateX(-20px);} to {opacity:1; transform:translateX(0);}}
 @media(max-width:768px){.main-container{margin:1rem;padding:1rem;}.navbar-brand{font-size:1.2rem;}.card{margin-bottom:1rem;}.navbar-nav .dropdown-menu{position:absolute; right:0; left:auto;}.cart-item-image{width:60px;height:60px;}.table-responsive{font-size:0.875rem;}}
-
 .cart-item-image{width:80px;height:80px; object-fit:cover; border-radius:8px;}
 .quantity-control{display:flex; align-items:center;}
 .quantity-btn{width:32px;height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; background:#f1f5f9; border:1px solid #e2e8f0; cursor:pointer; transition:var(--transition);}
@@ -98,7 +91,6 @@ body {
 </style>
 </head>
 <body>
-<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
 <div class="container-fluid">
     <a class="navbar-brand" href="{% url 'dashboard_home' %}"><i class="fas fa-store"></i> E-Commerce</a>
@@ -131,8 +123,6 @@ body {
     </div>
 </div>
 </nav>
-
-<!-- Main Content -->
 <div class="container-fluid">
 <div class="main-container fade-in">
 <div class="row mb-4">
@@ -141,7 +131,6 @@ body {
         <p class="text-muted">Review and manage your shopping cart items</p>
     </div>
 </div>
-
 {% if items %}
 <div class="row">
     <div class="col-lg-8">
@@ -189,9 +178,9 @@ body {
                                 </td>
                                 <td class="total">${{ item.total_price }}</td>
                                 <td>
-<button class="btn btn-sm btn-outline-danger remove-item" data-item-id="{{ item.id }}" data-url="{% url 'remove_from_cart' item.id %}">
-    <i class="fas fa-trash-alt"></i>
-</button>
+                                    <button class="btn btn-sm btn-outline-danger remove-item" data-item-id="{{ item.id }}" data-url="{% url 'remove_from_cart' item.id %}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -202,12 +191,11 @@ body {
         </div>
         <div class="d-flex justify-content-between">
             <a href="{% url 'shop' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Continue Shopping</a>
-<button class="btn btn-outline-danger" id="clear-cart" data-url="{% url 'clear_cart' %}">
-    <i class="fas fa-trash me-2"></i>Clear Cart
-</button>
+            <button class="btn btn-outline-danger" id="clear-cart" data-url="{% url 'clear_cart' %}">
+                <i class="fas fa-trash me-2"></i>Clear Cart
+            </button>
         </div>
     </div>
-
     <div class="col-lg-4">
         <div class="card summary-card">
             <div class="card-header bg-white">
@@ -251,13 +239,10 @@ body {
 {% endif %}
 </div>
 </div>
-
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // CSRF token function
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -274,7 +259,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     const csrftoken = getCookie('csrftoken');
 
-    // Update totals
     function updateTotals() {
         let subtotal = 0;
         document.querySelectorAll('tbody tr').forEach(row => {
@@ -290,24 +274,50 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('total').textContent = '$'+(subtotal+shipping+tax).toFixed(2);
     }
 
-    // Quantity controls
-    document.querySelectorAll('.quantity-btn.increase').forEach(btn=>{
-        btn.addEventListener('click',function(){
-            const itemId=this.dataset.itemId;
-            const input=document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
-            input.value=parseInt(input.value)+1;
-            updateTotals();
-        });
-    });
-    document.querySelectorAll('.quantity-btn.decrease').forEach(btn=>{
-        btn.addEventListener('click',function(){
-            const itemId=this.dataset.itemId;
-            const input=document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
-            if(parseInt(input.value)>1){input.value=parseInt(input.value)-1; updateTotals();}
+    document.querySelectorAll('.quantity-btn.increase').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const input = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
+            input.value = parseInt(input.value) + 1;
+            fetch('/api/cart/update-quantity/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ item_id: itemId, quantity: parseInt(input.value) })
+            })
+            .then(res => res.json())
+            .then(data => {
+                updateTotals();
+            })
+            .catch(err => console.error(err));
         });
     });
 
-    // Remove item popup
+    document.querySelectorAll('.quantity-btn.decrease').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const input = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+                fetch('/api/cart/update-quantity/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ item_id: itemId, quantity: parseInt(input.value) })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    updateTotals();
+                })
+                .catch(err => console.error(err));
+            }
+        });
+    });
+
     document.querySelectorAll('.remove-item').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -316,43 +326,42 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemName = row.querySelector('h6').textContent;
 
             Swal.fire({
-                title:`Remove "${itemName}"?`,
-                text:"This action cannot be undone.",
-                icon:'warning',
-                showCancelButton:true,
-                confirmButtonColor:'#ef4444',
-                cancelButtonColor:'#64748b',
-                confirmButtonText:'Yes, remove it!',
-                cancelButtonText:'Cancel'
+                title: `Remove "${itemName}"?`,
+                text: "This action cannot be undone.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'Cancel'
             }).then((result) => {
-                if(result.isConfirmed){
+                if (result.isConfirmed) {
                     fetch(url, {
                         method: 'POST',
                         headers: {'X-CSRFToken': csrftoken}
                     })
-                    .then(res => window.location.reload())  
+                    .then(res => window.location.reload())
                     .catch(err => console.error(err));
                 }
             });
         });
     });
 
-    // Clear cart popup
     document.getElementById('clear-cart').addEventListener('click', function(e) {
         e.preventDefault();
         const url = this.dataset.url;
 
         Swal.fire({
-            title:'Clear your cart?',
-            text:"All items will be removed.",
-            icon:'warning',
-            showCancelButton:true,
-            confirmButtonColor:'#ef4444',
-            cancelButtonColor:'#64748b',
-            confirmButtonText:'Yes, clear it!',
-            cancelButtonText:'Cancel'
+            title: 'Clear your cart?',
+            text: "All items will be removed.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, clear it!',
+            cancelButtonText: 'Cancel'
         }).then((result) => {
-            if(result.isConfirmed){
+            if (result.isConfirmed) {
                 fetch(url, {
                     method: 'POST',
                     headers: {'X-CSRFToken': csrftoken}
@@ -363,7 +372,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Initial totals calculation
+    document.querySelector('form[action="{% url 'checkout' %}"]').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const url = this.action;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Checkout completed successfully!',
+                icon: 'success',
+                confirmButtonColor: '#10b981',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = '{% url "shop" %}';
+            });
+        })
+        .catch(err => {
+            Swal.fire({
+                title: 'Error',
+                text: 'Something went wrong during checkout.',
+                icon: 'error',
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'OK'
+            });
+            console.error(err);
+        });
+    });
+
     updateTotals();
 });
 </script>
