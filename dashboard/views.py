@@ -327,10 +327,12 @@ def remove_from_cart(request, item_id):
 def shop_view(request):
     products = Product.objects.filter(stock__gt=0)
     categories = Category.objects.all()
+
     search = request.GET.get("search", "")
     selected_category = request.GET.get("category", "all")
     max_price = request.GET.get("max_price", "")
     sort = request.GET.get("sort", "name")
+
     if search:
         products = products.filter(name__icontains=search)
     if selected_category != "all":
@@ -340,7 +342,8 @@ def shop_view(request):
             max_price = float(max_price)
             products = products.filter(price__lte=max_price)
         except ValueError:
-            max_price = 10000  # Default max if invalid
+            max_price = 1000
+
     if sort == "price-low":
         products = products.order_by("price")
     elif sort == "price-high":
@@ -348,14 +351,17 @@ def shop_view(request):
     elif sort == "newest":
         products = products.order_by("-created_at")
     elif sort == "popular":
-        products = products.order_by("-views")  # Assuming a views field; adjust as needed
+        products = products.order_by("-views")
     else:
         products = products.order_by("name")
+
     paginator = Paginator(products, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
+
     cart, _ = Cart.objects.get_or_create(user=request.user)
     cart_items_count = cart.items.count()
+
     if request.method == "POST":
         product_id = request.POST.get("product_id")
         quantity = int(request.POST.get("quantity", 1))
@@ -371,6 +377,7 @@ def shop_view(request):
                 messages.success(request, f"🛒 Added {quantity} × {product.name} to your cart!")
             else:
                 messages.error(request, f"❌ Insufficient stock for {product.name}")
+        
         query_params = request.GET.urlencode()
         redirect_url = f"?{query_params}" if query_params else ""
         return redirect(f"{request.path}{redirect_url}")

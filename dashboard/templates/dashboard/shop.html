@@ -296,6 +296,8 @@
         border: none;
         transition: all 0.3s;
         cursor: pointer;
+        text-decoration: none;
+        color: #343a40;
     }
     
     .category-filter:hover, .category-filter.active {
@@ -363,7 +365,7 @@
     }
 
     .filter-form {
-        display: none; /* Hidden for JS handling, but can be used for server-side */
+        display: none;
     }
     
     @media (max-width: 768px) {
@@ -406,18 +408,12 @@
     <div class="filters-card">
         <h3><i class="fas fa-filter text-primary"></i> Filter Products</h3>
         <form method="get" class="filter-form">
-            <!-- Hidden inputs to preserve other params if needed -->
             <input type="hidden" name="page" value="1">
         </form>
         <div class="category-filters">
-            <a href="?category=all&{% if search %}{{ request.GET.urlencode|cut:'?category=' }}{% endif %}" 
-               class="category-filter {% if selected_category == 'all' %}active{% endif %}">All Products</a>
-
+            <button class="category-filter {% if selected_category == 'all' %}active{% endif %}" data-category="all">All Products</button>
             {% for category in categories %}
-                <a href="?category={{ category.name }}&{% if search %}{{ request.GET.urlencode|cut:'?category=' }}{% endif %}" 
-                   class="category-filter {% if selected_category == category.name %}active{% endif %}">
-                    {{ category.name }}
-                </a>
+                <button class="category-filter {% if selected_category == category.name %}active{% endif %}" data-category="{{ category.name }}">{{ category.name }}</button>
             {% endfor %}
         </div>
         
@@ -433,7 +429,7 @@
             
             <div class="col-md-6">
                 <label class="form-label"><i class="fas fa-sort"></i> Sort By</label>
-                <select class="form-select" id="sortBy" onchange="applyFilters()">
+                <select class="form-select" id="sortBy">
                     <option value="name" {% if sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
                     <option value="price-low" {% if sort == 'price-low' %}selected{% endif %}>Price: Low to High</option>
                     <option value="price-high" {% if sort == 'price-high' %}selected{% endif %}>Price: High to Low</option>
@@ -533,8 +529,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const priceRange = document.getElementById('priceRange');
     const sortBy = document.getElementById('sortBy');
-    
-    // Client-side add to cart animation (server-side submission)
+    const categoryFilters = document.querySelectorAll('.category-filter');
+
+    categoryFilters.forEach(filter => {
+        filter.addEventListener('click', function() {
+            categoryFilters.forEach(f => f.classList.remove('active'));
+            this.classList.add('active');
+            const queryParams = new URLSearchParams(window.location.search);
+            queryParams.set('category', this.dataset.category);
+            queryParams.set('page', '1');
+            window.location.href = `?${queryParams.toString()}`;
+        });
+    });
+
+    searchInput.addEventListener('input', debounce(function() {
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set('search', searchInput.value);
+        queryParams.set('page', '1');
+        window.location.href = `?${queryParams.toString()}`;
+    }, 300));
+
+    priceRange.addEventListener('input', function() {
+        document.getElementById('maxPrice').textContent = '$' + this.value;
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set('max_price', this.value);
+        queryParams.set('page', '1');
+        window.location.href = `?${queryParams.toString()}`;
+    });
+
+    sortBy.addEventListener('change', function() {
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set('sort', this.value);
+        queryParams.set('page', '1');
+        window.location.href = `?${queryParams.toString()}`;
+    });
+
     document.querySelectorAll('.add-to-cart-form').forEach(form => {
         form.addEventListener('submit', function(e) {
             const button = this.querySelector('.btn-add-to-cart');
@@ -543,7 +572,6 @@ document.addEventListener('DOMContentLoaded', function() {
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
             button.disabled = true;
             
-            // Submit normally; animation is just visual
             setTimeout(() => {
                 button.innerHTML = '<i class="fas fa-check"></i> Added!';
                 button.style.background = 'linear-gradient(to right, #28a745, #20c997)';
@@ -554,58 +582,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     button.innerHTML = originalText;
                     button.style.background = '';
+                    button.disabled = false;
                 }, 1500);
             }, 800);
         });
     });
-    
-    // Client-side filters for current page only (for instant feedback; full reload on change)
-    function applyFilters() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const maxPrice = parseFloat(priceRange.value);
-        const sortValue = sortBy.value;
-        const products = document.querySelectorAll('.product-card');
-        
-        let filtered = Array.from(products).filter(product => {
-            const name = product.dataset.name;
-            const price = parseFloat(product.dataset.price);
-            const searchMatch = name.includes(searchTerm);
-            const priceMatch = price <= maxPrice;
-            return searchMatch && priceMatch;
-        });
-        
-        // Sort filtered
-        filtered.sort((a, b) => {
-            switch(sortValue) {
-                case 'name':
-                    return a.dataset.name.localeCompare(b.dataset.name);
-                case 'price-low':
-                    return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
-                case 'price-high':
-                    return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-                default:
-                    return 0;
-            }
-        });
-        
-        // Re-append to grid
-        const grid = document.getElementById('productsGrid');
-        products.forEach(p => grid.appendChild(p)); // Reset
-        filtered.forEach((product, index) => {
-            product.style.display = 'block';
-            grid.appendChild(product);
-        });
-        products.forEach(p => { if (!filtered.includes(p)) p.style.display = 'none'; });
-    }
-    
-    searchInput.addEventListener('input', debounce(applyFilters, 300));
-    priceRange.addEventListener('input', function() {
-        document.getElementById('maxPrice').textContent = '$' + this.value;
-        applyFilters();
-    });
-    
-    // For server-side full refresh on category/sort (links already handle)
-    // Debounce for search
+
     function debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -617,8 +599,6 @@ document.addEventListener('DOMContentLoaded', function() {
             timeout = setTimeout(later, wait);
         };
     }
-    
-    // Note: For full server-side search/filter, add submit button or on change redirect
 });
 </script>
 {% endblock %}
