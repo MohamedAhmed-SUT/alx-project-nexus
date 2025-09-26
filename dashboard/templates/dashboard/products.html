@@ -115,7 +115,6 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th><input type="checkbox" id="selectAll"></th>
                         <th>Image</th>
                         <th>Product</th>
                         <th>Brand</th>
@@ -138,7 +137,6 @@
                         data-category="{{ product.category.name|default:'Uncategorized' }}"
                         data-status="{% if product.is_active %}Active{% else %}Inactive{% endif %}"
                         data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
-                        <td><input type="checkbox" class="product-checkbox" data-id="{{ product.id }}"></td>
                         <td>
                             {% if product.image %}
                                 <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" width="60" height="60">
@@ -177,7 +175,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="10" class="text-center py-4">
+                        <td colspan="9" class="text-center py-4">
                             <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
                             <p class="text-muted">No products found. <a href="{% url 'product_create' %}">Add your first product</a></p>
                         </td>
@@ -258,12 +256,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.product-checkbox');
-    selectAll.addEventListener('change', function() {
-        checkboxes.forEach(cb => cb.checked = selectAll.checked);
-    });
-
     const viewButtons = document.querySelectorAll('.view-details-btn');
     const modalEl = document.getElementById('productDetailsModal');
     const modalInstance = new bootstrap.Modal(modalEl);
