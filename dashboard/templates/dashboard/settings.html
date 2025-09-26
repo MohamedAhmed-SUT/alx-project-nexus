@@ -343,10 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: new FormData(this),
                 headers: { 'X-CSRFToken': csrftoken }
             })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
                     Swal.fire({
@@ -364,7 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         errorMsg += '<ul>';
                         for (const [field, errors] of Object.entries(data.errors)) {
                             errors.forEach(error => {
-                                errorMsg += `<li>${field}: ${error}</li>`;
+                                errorMsg += `<li>${field}: ${error.message || error}</li>`;
                             });
                         }
                         errorMsg += '</ul>';
@@ -414,10 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: new FormData(this),
                 headers: { 'X-CSRFToken': csrftoken }
             })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
                     Swal.fire({
@@ -435,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         errorMsg += '<ul>';
                         for (const [field, errors] of Object.entries(data.errors)) {
                             errors.forEach(error => {
-                                errorMsg += `<li>${field}: ${error}</li>`;
+                                errorMsg += `<li>${field}: ${error.message || error}</li>`;
                             });
                         }
                         errorMsg += '</ul>';
@@ -485,10 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'POST',
                     headers: { 'X-CSRFToken': csrftoken }
                 })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
                         Swal.fire({

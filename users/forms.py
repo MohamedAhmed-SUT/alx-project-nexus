@@ -24,23 +24,21 @@ class UserUpdateForm(forms.ModelForm):
         }
 
 class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(
+        label="Current Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control rounded-pill shadow-sm', 'required': True})
+    )
+    new_password1 = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control rounded-pill shadow-sm', 'required': True})
+    )
+    new_password2 = forms.CharField(
+        label="Confirm New Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control rounded-pill shadow-sm', 'required': True})
+    )
     class Meta:
         model = User
         fields = ['old_password', 'new_password1', 'new_password2']
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['old_password'].widget.attrs.update({
-            'class': 'form-control rounded-pill shadow-sm',
-            'required': True
-        })
-        self.fields['new_password1'].widget.attrs.update({
-            'class': 'form-control rounded-pill shadow-sm',
-            'required': True
-        })
-        self.fields['new_password2'].widget.attrs.update({
-            'class': 'form-control rounded-pill shadow-sm',
-            'required': True
-        })
 
 class ProductForm(forms.ModelForm):
     class Meta:

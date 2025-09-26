@@ -156,8 +156,9 @@ def password_change(request):
             messages.success(request, "Password changed successfully!")
             return JsonResponse({'status': 'success', 'message': 'Password changed successfully'})
         else:
-            return JsonResponse({'status': 'error', 'message': 'Please correct the errors in the form', 'errors': form.errors}, status=400)
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+            errors = json.loads(form.errors.as_json())
+            return JsonResponse({'status': 'error', 'message': 'Please correct the errors in the form', 'errors': errors}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
 @login_required
 def user_delete(request, pk):
