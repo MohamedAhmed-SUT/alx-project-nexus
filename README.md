@@ -120,13 +120,17 @@ Project Details
 
 Repository: https://github.com/MohamedAhmed-SUT/alx-project-nexus
 
-Hosted API: \[To be added after deployment]
+Hosted project : https://alx-project-nexus-production-53e7.up.railway.app/
+
+Hosted API: https://alx-project-nexus-production-53e7.up.railway.app/api/docs/
+
+Admin Panel: https://alx-project-nexus-production-53e7.up.railway.app/admin/
 
 ERD Diagram: https://drive.google.com/file/d/1Ia26xv9PQZlnbwLdQ-9RcaB1qN6G5w8g/view?usp=sharing
 
-Presentation Slides: \[To be added with Google Slides link]
+Presentation Slides: https://docs.google.com/presentation/d/1z4o_UOKDW_0jvJ6VSJtcUD_MOooUVFktt2YEX7ZhhqU/edit?usp=sharing
 
-Demo Video: \[To be added with video link]
+Demo Video: https://mega.nz/file/p64XRJhT#7ZV-G7edxcpZYuJ1OVy4Nr3ilqS4UqqEOHHUrC_fEuM
 
 
 
