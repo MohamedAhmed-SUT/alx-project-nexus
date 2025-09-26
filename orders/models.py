@@ -46,7 +46,9 @@ class Order(models.Model):
             'Completed': 'success',
             'Cancelled': 'danger'
         }.get(self.status, 'secondary')
-
+    @property
+    def total_amount(self):
+        return sum(item.price * item.quantity for item in self.items.all())
 
 class OrderItem(models.Model):
     order = models.ForeignKey(

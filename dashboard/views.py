@@ -31,7 +31,7 @@ def admin_dashboard(request):
     if start_date:
         orders = orders.filter(created_at__date__gte=start_date)
     for order in orders:
-        order.total_amount = sum(item.price * item.quantity for item in order.items.all())
+        total = order.total_amount
     total_sales = sum(order.total_amount for order in orders)
     sales_by_month = []
     for month in range(1, 13):
